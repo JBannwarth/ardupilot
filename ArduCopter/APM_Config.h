@@ -5,7 +5,7 @@
 // If you used to define your CONFIG_APM_HARDWARE setting here, it is no longer
 // valid! You should switch to using a HAL_BOARD flag in your local config.mk.
 
-//#define FRAME_CONFIG QUAD_FRAME
+#define FRAME_CONFIG QUAD_FRAME
 /*  options:
  *  QUAD_FRAME
  *  TRI_FRAME
@@ -34,6 +34,9 @@
 //#define OPTFLOW               DISABLED            // disable optical flow sensor to save 5K of flash space
 //#define FRSKY_TELEM_ENABLED   DISABLED            // disable FRSky telemetry
 
+// Sonar tilt correction
+#define SONAR_TILT_CORRECTION   ENABLED
+
 // features below are disabled by default on all boards
 //#define SPRAYER               ENABLED             // enable the crop sprayer feature (two ESC controlled pumps the speed of which depends upon the vehicle's horizontal velocity)
 
@@ -47,9 +50,10 @@
 // Put your variable definitions into the UserVariables.h file (or another file name and then change the #define below).
 //#define USERHOOK_VARIABLES "UserVariables.h"
 // Put your custom code into the UserCode.pde with function names matching those listed below and ensure the appropriate #define below is uncommented below
-//#define USERHOOK_INIT userhook_init();                      // for code to be run once at startup
+#define USERHOOK_INIT userhook_init();                      // for code to be run once at startup
 //#define USERHOOK_FASTLOOP userhook_FastLoop();            // for code to be run at 100hz
-//#define USERHOOK_50HZLOOP userhook_50Hz();                  // for code to be run at 50hz
+#define USERHOOK_50HZLOOP userhook_50Hz();                  // for code to be run at 50hz
 //#define USERHOOK_MEDIUMLOOP userhook_MediumLoop();        // for code to be run at 10hz
 //#define USERHOOK_SLOWLOOP userhook_SlowLoop();            // for code to be run at 3.3hz
 //#define USERHOOK_SUPERSLOWLOOP userhook_SuperSlowLoop();  // for code to be run at 1hz
+

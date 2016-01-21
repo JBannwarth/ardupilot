@@ -4,12 +4,10 @@
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
-
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -27,43 +25,44 @@
 extern const AP_HAL::HAL& hal;
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_APM1
- #include <AP_ADC_AnalogSource/AP_ADC_AnalogSource.h>
- #define ARSPD_DEFAULT_PIN 64
+    #include <AP_ADC_AnalogSource/AP_ADC_AnalogSource.h>
+    #define ARSPD_DEFAULT_PIN 64
 #elif CONFIG_HAL_BOARD == HAL_BOARD_APM2
- #define ARSPD_DEFAULT_PIN 0
+    #define ARSPD_DEFAULT_PIN 0
 #elif CONFIG_HAL_BOARD == HAL_BOARD_SITL
- #define ARSPD_DEFAULT_PIN 1
+    #define ARSPD_DEFAULT_PIN 1
 #elif CONFIG_HAL_BOARD == HAL_BOARD_PX4  || CONFIG_HAL_BOARD == HAL_BOARD_VRBRAIN
- #include <sys/stat.h>
- #include <sys/types.h>
- #include <fcntl.h>
- #include <unistd.h>
- #include <systemlib/airspeed.h>
- #include <drivers/drv_airspeed.h>
- #include <uORB/topics/differential_pressure.h>
-#if defined(CONFIG_ARCH_BOARD_VRBRAIN_V45)
- #define ARSPD_DEFAULT_PIN 0
-#elif defined(CONFIG_ARCH_BOARD_VRBRAIN_V51)
- #define ARSPD_DEFAULT_PIN 0
-#elif defined(CONFIG_ARCH_BOARD_VRBRAIN_V52)
- #define ARSPD_DEFAULT_PIN 0
-#elif defined(CONFIG_ARCH_BOARD_VRUBRAIN_V51)
- #define ARSPD_DEFAULT_PIN 0
-#elif defined(CONFIG_ARCH_BOARD_VRUBRAIN_V52)
- #define ARSPD_DEFAULT_PIN 0
-#elif defined(CONFIG_ARCH_BOARD_VRHERO_V10)
- #define ARSPD_DEFAULT_PIN 0
-#elif defined(CONFIG_ARCH_BOARD_PX4FMU_V1)
- #define ARSPD_DEFAULT_PIN 11
-#else
- #define ARSPD_DEFAULT_PIN 15
-#endif
+    #include <sys/stat.h>
+    #include <sys/types.h>
+    #include <fcntl.h>
+    #include <unistd.h>
+    #include <systemlib/airspeed.h>
+    #include <drivers/drv_airspeed.h>
+    #include <uORB/topics/differential_pressure.h>
+    /*#if defined(CONFIG_ARCH_BOARD_VRBRAIN_V45)
+        #define ARSPD_DEFAULT_PIN 0
+    #elif defined(CONFIG_ARCH_BOARD_VRBRAIN_V51)
+        #define ARSPD_DEFAULT_PIN 0
+    #elif defined(CONFIG_ARCH_BOARD_VRBRAIN_V52)
+        #define ARSPD_DEFAULT_PIN 0
+    #elif defined(CONFIG_ARCH_BOARD_VRUBRAIN_V51)
+        #define ARSPD_DEFAULT_PIN 0
+    #elif defined(CONFIG_ARCH_BOARD_VRUBRAIN_V52)
+        #define ARSPD_DEFAULT_PIN 0
+    #elif defined(CONFIG_ARCH_BOARD_VRHERO_V10)
+        #define ARSPD_DEFAULT_PIN 0
+    #elif defined(CONFIG_ARCH_BOARD_PX4FMU_V1)
+        #define ARSPD_DEFAULT_PIN 11
+    #else
+        #define ARSPD_DEFAULT_PIN 15
+    #endif*/
+    #define ARSPD_DEFAULT_PIN AP_AIRSPEED_I2C_PIN
 #elif CONFIG_HAL_BOARD == HAL_BOARD_FLYMAPLE
- #define ARSPD_DEFAULT_PIN 16
+    #define ARSPD_DEFAULT_PIN 16
 #elif CONFIG_HAL_BOARD == HAL_BOARD_LINUX
- #define ARSPD_DEFAULT_PIN AP_AIRSPEED_I2C_PIN
+    #define ARSPD_DEFAULT_PIN AP_AIRSPEED_I2C_PIN
 #else
- #define ARSPD_DEFAULT_PIN 0
+    #define ARSPD_DEFAULT_PIN 0
 #endif
 
 // table of user settable parameters
@@ -117,6 +116,15 @@ const AP_Param::GroupInfo AP_Airspeed::var_info[] PROGMEM = {
     // @Values: 0:Disable,1:Enable
     // @User: Advanced
     AP_GROUPINFO("SKIP_CAL",  7, AP_Airspeed, _skip_cal, 0),
+
+    // @Param: CORR_ZERO
+    // @DisplayName: Correct zero airspeed reading
+    // @Description: This parameter is added to the raw_airspeed value to get a zero mean. Should be obtained from testing...
+    // @Units: m/s
+    // @Range: -10 10
+    // @Increment: 0.1
+    // @User: Advanced
+    AP_GROUPINFO("CORR_ZERO",  8, AP_Airspeed, _correct_zero, 0),
 
     AP_GROUPEND
 };
@@ -185,6 +193,7 @@ void AP_Airspeed::calibrate(bool in_startup)
     }
     // discard first reading
     get_pressure();
+    // read pressure for first 1s at 0.1s intervals and sum readings
     for (uint8_t i = 0; i < 10; i++) {
         hal.scheduler->delay(100);
         float p = get_pressure();
@@ -199,7 +208,9 @@ void AP_Airspeed::calibrate(bool in_startup)
         _offset.set(0);
         return;
     }
+    // average reading over 1s during initialization
     float raw = sum/count;
+    // set initial values
     _offset.set_and_save(raw);
     _airspeed = 0;
     _raw_airspeed = 0;
@@ -239,7 +250,7 @@ void AP_Airspeed::read(void)
     }
     airspeed_pressure       = max(airspeed_pressure, 0);
     _last_pressure          = airspeed_pressure;
-    _raw_airspeed           = sqrtf(airspeed_pressure * _ratio);
+    _raw_airspeed           = sqrtf(airspeed_pressure * _ratio) + _correct_zero;
     _airspeed               = 0.7f * _airspeed  +  0.3f * _raw_airspeed;
     _last_update_ms         = hal.scheduler->millis();
 }

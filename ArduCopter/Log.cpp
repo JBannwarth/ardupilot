@@ -681,6 +681,28 @@ void Copter::Log_Write_Heli()
 }
 #endif
 
+struct PACKED log_Airspeed {
+    LOG_PACKET_HEADER;
+    uint64_t    time_us;
+    float       air_speed;
+    float       raw_airspeed;
+    float       temperature;
+    float       airspeed_ratio;
+};
+
+void Copter::Log_Write_Airspeed(float air_speed, float raw_airspeed, float temperature, float airspeed_ratio)
+{
+    struct log_Airspeed pkt_airspeed = {
+        LOG_PACKET_HEADER_INIT(LOG_AIRSPEED_MSG),
+        time_us         : hal.scheduler->micros64(),
+        air_speed       : air_speed,
+        raw_airspeed    : raw_airspeed,
+        temperature     : temperature,
+        airspeed_ratio  : airspeed_ratio,
+    };
+    DataFlash.WriteBlock(&pkt_airspeed, sizeof(pkt_airspeed));
+}
+
 const struct LogStructure Copter::log_structure[] PROGMEM = {
     LOG_COMMON_STRUCTURES,
 #if AUTOTUNE_ENABLED == ENABLED
@@ -721,6 +743,8 @@ const struct LogStructure Copter::log_structure[] PROGMEM = {
       "ERR",   "QBB",         "TimeUS,Subsys,ECode" },
     { LOG_HELI_MSG, sizeof(log_Heli),
       "HELI",  "Qhh",         "TimeUS,DRRPM,ERRPM" },
+    { LOG_AIRSPEED_MSG, sizeof(log_Airspeed),
+      "ASPD",  "Qffff",       "TimeUS,air,raw_air,temp,air_ratio" }
 };
 
 #if CLI_ENABLED == ENABLED

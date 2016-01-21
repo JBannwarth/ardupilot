@@ -1076,6 +1076,10 @@ const AP_Param::Info Copter::var_info[] PROGMEM = {
     // @User: Standard
     GSCALAR(autotune_min_d, "AUTOTUNE_MIN_D", 0.004f),
 
+    // @GROUP: ASPD_
+	// @Path: ../libraries/AP_Airspeed/AP_Airspeed.cpp
+	GOBJECT(airspeed, "ASPD_", AP_Airspeed),
+
     AP_VAREND
 };
 

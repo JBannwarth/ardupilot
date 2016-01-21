@@ -296,6 +296,9 @@ public:
         k_param_flight_mode6,
         k_param_simple_modes,
 
+        // 207: Airspeed
+        k_param_airspeed = 207, // 19
+
         //
         // 210: Waypoint data
         //

@@ -207,6 +207,10 @@ private:
 
     GCS_MAVLINK gcs[MAVLINK_COMM_NUM_BUFFERS];
 
+    // Airspeed
+	AP_Vehicle::FixedWing airspeed_aparm;
+	AP_Airspeed airspeed {airspeed_aparm};
+
     // User variables
 #ifdef USERHOOK_VARIABLES
 # include USERHOOK_VARIABLES
@@ -629,6 +633,8 @@ private:
 #if FRAME_CONFIG == HELI_FRAME
     void Log_Write_Heli(void);
 #endif
+    // Airspeed
+    void Log_Write_Airspeed(float air_speed, float raw_airspeed, float temperature, float airspeed_ratio);
     void Log_Read(uint16_t log_num, uint16_t start_page, uint16_t end_page);
     void start_logging() ;
     void load_parameters(void);
