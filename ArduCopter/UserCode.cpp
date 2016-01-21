@@ -35,6 +35,7 @@ void Copter::userhook_50Hz()
     // Print to console
     // hal.console->printf("Airspeed: %.3f Temp: %.3f\n",airspeed.get_airspeed(),temp);
     // Log airspeed information
+//    Log_Write_Airspeed(10.0f,0.0f,0.0f,0.0f);
     Log_Write_Airspeed(airspeed.get_airspeed(), airspeed.get_raw_airspeed(), temp, airspeed.get_airspeed_ratio());
 
     // WINDCOMP LOGGING
