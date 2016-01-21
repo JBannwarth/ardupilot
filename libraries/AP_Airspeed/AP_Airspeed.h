@@ -171,6 +171,7 @@ private:
     AP_Int8         _autocal;
     AP_Int8         _tube_order;
     AP_Int8         _skip_cal;
+    AP_Float        _correct_zero;
     float           _raw_airspeed;
     float           _airspeed;
     float			_last_pressure;
@@ -199,4 +200,3 @@ private:
 #define AP_AIRSPEED_I2C_PIN 65
 
 #endif // __AP_AIRSPEED_H__
-
