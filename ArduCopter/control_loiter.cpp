@@ -164,7 +164,20 @@ void Copter::loiter_run()
         wp_nav.update_loiter(ekfGndSpdLimit, ekfNavVelGainScaler);
 
         // call attitude controller
-        attitude_control.angle_ef_roll_pitch_rate_ef_yaw(wp_nav.get_roll(), wp_nav.get_pitch(), target_yaw_rate);
+        int32_t target_pitch = wp_nav.get_pitch();
+        /*float dac_P = 10.0f;
+        float k_drag = 10.0f;
+
+        if (windcomp_type == 1)
+        {
+        	target_pitch += dac_P * airspeed.get_airspeed();
+        }
+        else if (windcomp_type == 2)
+        {
+        	target_pitch += atan2f(k_drag * airspeed.get_airspeed()^2, GRAVITY_MSS);
+        }*/
+
+        attitude_control.angle_ef_roll_pitch_rate_ef_yaw(wp_nav.get_roll(), target_pitch, target_yaw_rate);
 
         // run altitude controller
         if (sonar_enabled && (sonar_alt_health >= SONAR_ALT_HEALTH_MAX)) {
